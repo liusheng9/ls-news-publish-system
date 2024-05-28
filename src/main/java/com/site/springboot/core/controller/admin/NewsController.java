@@ -1,6 +1,8 @@
 package com.site.springboot.core.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.site.springboot.core.entity.News;
+import com.site.springboot.core.entity.NewsCategory;
 import com.site.springboot.core.service.CategoryService;
 import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.PageQueryUtil;
@@ -13,6 +15,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
+
+import java.util.List;
 import java.util.Map;
 
 
@@ -34,7 +38,10 @@ public class NewsController {
     @GetMapping("/news/edit")
     public String edit(HttpServletRequest request) {
         request.setAttribute("path", "edit");
-        request.setAttribute("categories", categoryService.getAllCategories());
+        QueryWrapper<NewsCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_deleted", 0).orderByDesc("category_id");
+        List<NewsCategory> categories = categoryService.list(queryWrapper);
+        request.setAttribute("categories", categories);
         return "admin/edit";
     }
 
@@ -92,7 +99,10 @@ public class NewsController {
             return "error/error_400";
         }
         request.setAttribute("news", news);
-        request.setAttribute("categories", categoryService.getAllCategories());
+        QueryWrapper<NewsCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_deleted", 0).orderByDesc("category_id");
+        List<NewsCategory> categories = categoryService.list(queryWrapper);
+        request.setAttribute("categories", categories);
         return "admin/edit";
     }
 

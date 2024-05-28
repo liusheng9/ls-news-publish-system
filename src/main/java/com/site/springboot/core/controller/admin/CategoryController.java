@@ -1,17 +1,25 @@
 package com.site.springboot.core.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.site.springboot.core.dao.NewsCategoryMapper;
 import com.site.springboot.core.entity.NewsCategory;
 import com.site.springboot.core.service.CategoryService;
 import com.site.springboot.core.util.PageQueryUtil;
+import com.site.springboot.core.util.PageResult;
 import com.site.springboot.core.util.Result;
 import com.site.springboot.core.util.ResultGenerator;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -19,8 +27,12 @@ import java.util.Map;
 @RequestMapping("/admin")
 public class CategoryController {
 
-    @Resource
+    @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private NewsCategoryMapper categoryMapper;
+
 
     @GetMapping("/categories")
     public String categoryPage(HttpServletRequest request) {
@@ -37,8 +49,21 @@ public class CategoryController {
         if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {
             return ResultGenerator.genFailResult("参数异常！");
         }
+
         PageQueryUtil pageUtil = new PageQueryUtil(params);
-        return ResultGenerator.genSuccessResult(categoryService.getCategoryPage(pageUtil));
+        IPage<NewsCategory> page = new Page<>(pageUtil.getPage(), pageUtil.getLimit());
+
+        QueryWrapper<NewsCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("is_deleted", 0).orderByDesc("category_id");
+
+        IPage<NewsCategory> categoryIPage = categoryMapper.selectPage(page, queryWrapper);
+
+        PageResult pageResult = new PageResult(categoryIPage.getRecords(),
+                (int) categoryIPage.getTotal(),
+                (int) categoryIPage.getSize(),
+                (int) categoryIPage.getCurrent());
+        return ResultGenerator.genSuccessResult(pageResult);
+
     }
 
     /**
@@ -47,7 +72,8 @@ public class CategoryController {
     @RequestMapping(value = "/categories/info/{id}", method = RequestMethod.GET)
     @ResponseBody
     public Result info(@PathVariable("id") Long id) {
-        NewsCategory newsCategory = categoryService.queryById(id);
+        NewsCategory newsCategory = categoryService.getById(id);
+        if(newsCategory==null || newsCategory.getCategoryId() ==1) return ResultGenerator.genFailResult("分类不存在");
         return ResultGenerator.genSuccessResult(newsCategory);
     }
 
@@ -61,11 +87,14 @@ public class CategoryController {
         if (!StringUtils.hasText(categoryName)) {
             return ResultGenerator.genFailResult("参数异常！");
         }
-        if (categoryService.saveCategory(categoryName)) {
-            return ResultGenerator.genSuccessResult();
-        } else {
-            return ResultGenerator.genFailResult("分类名称重复");
-        }
+        QueryWrapper<NewsCategory> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("category_name", categoryName);
+        if(categoryService.getOne(queryWrapper)!=null) return ResultGenerator.genFailResult("名称重复");
+        NewsCategory category = new NewsCategory();
+        category.setCategoryName(categoryName);
+        category.setIsDeleted((byte) 0);
+        categoryService.save(category);
+        return ResultGenerator.genSuccessResult();
     }
 
 
@@ -79,7 +108,13 @@ public class CategoryController {
         if (!StringUtils.hasText(categoryName)) {
             return ResultGenerator.genFailResult("参数异常！");
         }
-        if (categoryService.updateCategory(categoryId, categoryName)) {
+        NewsCategory newsCategory= categoryService.getById(categoryId);
+        if(newsCategory==null||newsCategory.getIsDeleted()==1) return ResultGenerator.genFailResult("分类不存在");
+        newsCategory.setCategoryName(categoryName);
+        QueryWrapper<NewsCategory> queryWrapper = new QueryWrapper<>();
+
+        boolean success = categoryService.updateById(newsCategory);
+        if (success) {
             return ResultGenerator.genSuccessResult();
         } else {
             return ResultGenerator.genFailResult("分类名称重复");
@@ -96,7 +131,10 @@ public class CategoryController {
         if (ids.length < 1) {
             return ResultGenerator.genFailResult("参数异常！");
         }
-        if (categoryService.deleteBatchByIds(ids)) {
+        List<NewsCategory> newsCategories = categoryService.listByIds(Arrays.asList(ids));
+        for(NewsCategory category : newsCategories)  category.setIsDeleted((byte) 1);
+        boolean success = categoryService.updateBatchById(newsCategories);
+        if (success) {
             return ResultGenerator.genSuccessResult();
         } else {
             return ResultGenerator.genFailResult("删除失败");
