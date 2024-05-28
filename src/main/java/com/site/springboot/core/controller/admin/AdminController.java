@@ -61,7 +61,7 @@ public class AdminController {
 
         QueryWrapper<Admin> queryWrapper =new QueryWrapper<>();
         String passwordMd5 = MD5Util.MD5Encode(password, "UTF-8");
-        queryWrapper.eq("login_name", userName).eq("password", passwordMd5);
+        queryWrapper.eq("login_name", userName).eq("login_password", passwordMd5);
         Admin adminUser = adminService.getOne(queryWrapper);
         if (adminUser != null) {
             session.setAttribute("loginUser", adminUser.getAdminNickName());
