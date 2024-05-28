@@ -1,6 +1,16 @@
 package com.site.springboot.core.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+@TableName("tb_admin_user")
 public class Admin {
+    @TableId(type = IdType.AUTO)
     private Long adminId;
 
     private String loginName;
@@ -10,7 +20,6 @@ public class Admin {
     private String adminNickName;
 
     private Byte locked;
-
     public Long getAdminId() {
         return adminId;
     }
@@ -65,4 +74,5 @@ public class Admin {
         sb.append("]");
         return sb.toString();
     }
+
 }

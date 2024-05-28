@@ -1,12 +1,18 @@
 package com.site.springboot.core.controller.admin;
 
 import cn.hutool.captcha.ShearCaptcha;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.site.springboot.core.dao.AdminMapper;
 import com.site.springboot.core.entity.Admin;
+
 import com.site.springboot.core.service.*;
+import com.site.springboot.core.util.MD5Util;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +23,11 @@ public class AdminController {
 
     @Resource
     private AdminService adminService;
+
+    @Autowired
+    private AdminMapper adminMapper;
+
+
 
     @GetMapping({"/login"})
     public String login() {
@@ -47,7 +58,11 @@ public class AdminController {
             session.setAttribute("errorMsg", "验证码错误");
             return "admin/login";
         }
-        Admin adminUser = adminService.login(userName, password);
+
+        QueryWrapper<Admin> queryWrapper =new QueryWrapper<>();
+        String passwordMd5 = MD5Util.MD5Encode(password, "UTF-8");
+        queryWrapper.eq("login_name", userName).eq("password", passwordMd5);
+        Admin adminUser = adminService.getOne(queryWrapper);
         if (adminUser != null) {
             session.setAttribute("loginUser", adminUser.getAdminNickName());
             session.setAttribute("loginUserId", adminUser.getAdminId());
@@ -63,7 +78,7 @@ public class AdminController {
     @GetMapping("/profile")
     public String profile(HttpServletRequest request) {
         Long loginUserId = (long) request.getSession().getAttribute("loginUserId");
-        Admin adminUser = adminService.getUserDetailById(loginUserId);
+        Admin adminUser = adminService.getById (loginUserId);
         if (adminUser == null) {
             return "admin/login";
         }
@@ -81,15 +96,26 @@ public class AdminController {
             return "参数不能为空";
         }
         Long loginUserId = (long) request.getSession().getAttribute("loginUserId");
-        if (adminService.updatePassword(loginUserId, originalPassword, newPassword)) {
-            //修改成功后清空session中的数据，前端控制跳转至登录页
-            request.getSession().removeAttribute("loginUserId");
-            request.getSession().removeAttribute("loginUser");
-            request.getSession().removeAttribute("errorMsg");
-            return "success";
-        } else {
-            return "修改失败";
+        Admin adminUser = adminService.getById (loginUserId);
+        if(adminUser!=null){
+            String originalPasswordMd5 = MD5Util.MD5Encode(originalPassword, "UTF-8");
+            String newPasswordMd5 = MD5Util.MD5Encode(newPassword, "UTF-8");
+            //比较原密码是否正确
+            if (originalPasswordMd5.equals(adminUser.getLoginPassword())) {
+                //设置新密码并修改
+                adminUser.setLoginPassword(newPasswordMd5);
+                boolean success = adminService.updateById(adminUser);
+                if (success==true) {
+                    //修改成功后清空session中的数据，前端控制跳转至登录页
+                    request.getSession().removeAttribute("loginUserId");
+                    request.getSession().removeAttribute("loginUser");
+                    request.getSession().removeAttribute("errorMsg");
+                    return "success";
+                }
+            }
+
         }
+        return "修改失败";
     }
 
     @PostMapping("/profile/name")
@@ -100,11 +126,18 @@ public class AdminController {
             return "参数不能为空";
         }
         Long loginUserId = (long) request.getSession().getAttribute("loginUserId");
-        if (adminService.updateName(loginUserId, loginUserName, nickName)) {
-            return "success";
-        } else {
-            return "修改失败";
+        Admin adminUser = adminService.getById (loginUserId);
+        //当前用户非空才可以进行更改
+        if (adminUser != null) {
+            adminUser.setLoginName(loginUserName);
+            adminUser.setAdminNickName(nickName);
+            boolean success = adminService.updateById(adminUser);
+            if (success==true) {
+                //修改成功则返回true
+                return "success";
+            }
         }
+        return "修改失败";
     }
 
     @GetMapping("/logout")
