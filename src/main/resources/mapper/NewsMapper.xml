@@ -16,7 +16,7 @@
     <sql id="Base_Column_List">
     news_id, news_title, news_category_id, news_cover_image, news_content, news_status, news_views,
     is_deleted, create_time, update_time
-  </sql>
+    </sql>
     <select id="findNewsList" parameterType="Map" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -26,6 +26,13 @@
         <if test="start!=null and limit!=null">
             limit #{start},#{limit}
         </if>
+    </select>
+    <select id="findNewsAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from tb_news
+        where is_deleted=0
+        order by news_id desc
     </select>
     <select id="getTotalNews" parameterType="Map" resultType="int">
     select count(*)  from tb_news

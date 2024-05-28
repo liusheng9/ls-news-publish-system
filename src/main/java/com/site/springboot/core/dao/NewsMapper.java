@@ -25,4 +25,6 @@ public interface NewsMapper {
     int getTotalNews(PageQueryUtil pageUtil);
 
     int deleteBatch(Integer[] ids);
+
+    List<News> findNewsAll();
 }

@@ -4,6 +4,8 @@ import com.site.springboot.core.entity.News;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.PageResult;
 
+import java.util.List;
+
 public interface NewsService {
     String saveNews(News news);
 
@@ -26,4 +28,6 @@ public interface NewsService {
      * @return
      */
     String updateNews(News news);
+
+    List<News> findNewsAll();
 }

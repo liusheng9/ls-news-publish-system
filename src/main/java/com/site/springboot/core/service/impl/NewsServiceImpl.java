@@ -60,4 +60,8 @@ public class NewsServiceImpl implements NewsService {
         }
         return "修改失败";
     }
+
+    public List<News> findNewsAll(){
+        return newsMapper.findNewsAll();
+    }
 }
