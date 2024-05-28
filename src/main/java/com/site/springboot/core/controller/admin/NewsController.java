@@ -1,14 +1,17 @@
 package com.site.springboot.core.controller.admin;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.site.springboot.core.entity.News;
 import com.site.springboot.core.entity.NewsCategory;
+import com.site.springboot.core.entity.NewsFile;
 import com.site.springboot.core.service.CategoryService;
 import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.Result;
 import com.site.springboot.core.util.ResultGenerator;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +38,16 @@ public class NewsController {
     public String list(HttpServletRequest request) {
         request.setAttribute("path", "news");
         return "admin/news";
+    }
+
+    @GetMapping("/news/download")
+    public void download(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("新闻", "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        List<NewsFile> files= newsService.getNewsFileList();
+        EasyExcel.write(response.getOutputStream(), NewsFile.class).sheet("file模板").doWrite(files);
     }
 
     @GetMapping("/news/edit")

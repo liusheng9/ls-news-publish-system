@@ -1,6 +1,7 @@
 package com.site.springboot.core.service;
 
 import com.site.springboot.core.entity.News;
+import com.site.springboot.core.entity.NewsFile;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.PageResult;
 
@@ -30,4 +31,6 @@ public interface NewsService {
     String updateNews(News news);
 
     List<News> findNewsAll();
+
+    List<NewsFile> getNewsFileList();
 }
