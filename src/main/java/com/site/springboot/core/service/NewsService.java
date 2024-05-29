@@ -8,7 +8,7 @@ import com.site.springboot.core.util.PageResult;
 import java.util.List;
 
 public interface NewsService {
-    String saveNews(News news);
+    News saveNews(News news);
 
     PageResult getNewsPage(PageQueryUtil pageUtil);
 

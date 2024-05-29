@@ -98,11 +98,11 @@ public class NewsController {
         news.setNewsCoverImage(newsCoverImage);
         news.setNewsStatus(newsStatus);
         news.setNewsTitle(newsTitle);
-        String saveBlogResult = newsService.saveNews(news);
-        if ("success".equals(saveBlogResult)) {
+        News saveBlogResult = newsService.saveNews(news);
+        if (saveBlogResult!=null) {
             return ResultGenerator.genSuccessResult("添加成功");
         } else {
-            return ResultGenerator.genFailResult(saveBlogResult);
+            return ResultGenerator.genFailResult("添加失败");
         }
     }
 
