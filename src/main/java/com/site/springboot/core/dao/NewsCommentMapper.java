@@ -1,6 +1,7 @@
 package com.site.springboot.core.dao;
 
 import com.site.springboot.core.entity.NewsComment;
+import com.site.springboot.core.entity.NewsVo;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,4 +26,6 @@ public interface NewsCommentMapper {
     int checkDone(Integer[] ids);
 
     int deleteBatch(Integer[] ids);
+
+    List<NewsComment> findNewsCommentListByNewsId(Long newsId);
 }

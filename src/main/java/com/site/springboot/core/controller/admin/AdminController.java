@@ -6,15 +6,18 @@ import com.site.springboot.core.dao.AdminMapper;
 import com.site.springboot.core.entity.Admin;
 
 import com.site.springboot.core.service.*;
-import com.site.springboot.core.util.MD5Util;
+import com.site.springboot.core.util.*;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @Controller
@@ -26,6 +29,12 @@ public class AdminController {
 
     @Autowired
     private AdminMapper adminMapper;
+
+    @Autowired
+    private  NewsService newsService;
+
+    @Autowired
+    private CommentService commentService;
 
 
 
@@ -139,7 +148,6 @@ public class AdminController {
         }
         return "修改失败";
     }
-
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
         request.getSession().removeAttribute("loginUserId");
@@ -147,4 +155,15 @@ public class AdminController {
         request.getSession().removeAttribute("errorMsg");
         return "admin/login";
     }
+    @GetMapping("/lasted-news")
+    @ResponseBody
+    public Result listLastedNews(@RequestParam Map<String, Object> params) {
+        if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {
+            return ResultGenerator.genFailResult("参数异常！");
+        }
+        PageResult pageResult=newsService.getLastedNews( new PageQueryUtil(params));
+        return ResultGenerator.genSuccessResult(pageResult);
+    }
+
+
 }

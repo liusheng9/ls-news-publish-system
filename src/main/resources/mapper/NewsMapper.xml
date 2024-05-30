@@ -17,6 +17,15 @@
     news_id, news_title, news_category_id, news_cover_image, news_content, news_status, news_views,
     is_deleted, create_time, update_time
     </sql>
+
+    <select id="getNewsRecent" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM tb_news
+        WHERE is_deleted=0  and news_status=1
+        ORDER BY update_time DESC LIMIT 0,10
+    </select>
+
     <select id="findNewsList" parameterType="Map" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>

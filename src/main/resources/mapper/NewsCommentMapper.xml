@@ -23,6 +23,15 @@
       limit #{start},#{limit}
     </if>
   </select>
+  <select id="findNewsCommentListByNewsId" parameterType="Map" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from tb_news_comment
+    where news_id=#{newsId} and is_deleted=0
+    order by comment_id desc
+  </select>
+
+
   <select id="getTotalNewsComments" parameterType="Map" resultType="int">
     select count(*) from tb_news_comment
     where is_deleted=0

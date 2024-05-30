@@ -27,7 +27,7 @@ public class NewsIndex {
     @Field(type= FieldType.Long)
     @Id
     private Long newsId;
-    @Field(type= FieldType.Keyword)
+    @Field(type= FieldType.Text,analyzer = "ik_smart")
     private String newsTitle;
     @Field(type= FieldType.Long)
     private Long newsCategoryId;

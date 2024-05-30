@@ -1,9 +1,7 @@
 package com.site.springboot.core.dao;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.site.springboot.core.entity.News;
 import com.site.springboot.core.util.PageQueryUtil;
-import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -29,4 +27,6 @@ public interface NewsMapper  {
     int deleteBatch(Integer[] ids);
 
     List<News> findNewsAll();
+    List<News> getNewsRecent();
+
 }

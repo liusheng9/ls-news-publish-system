@@ -1,8 +1,11 @@
 package com.site.springboot.core.service;
 
 import com.site.springboot.core.entity.NewsComment;
+import com.site.springboot.core.entity.NewsVo;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.PageResult;
+
+import java.util.List;
 
 public interface CommentService {
     /**
@@ -36,4 +39,7 @@ public interface CommentService {
      * @return
      */
     Boolean deleteBatch(Integer[] ids);
+
+
+
 }

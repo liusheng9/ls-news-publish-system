@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.site.springboot.core.entity.News;
 import com.site.springboot.core.entity.NewsCategory;
 import com.site.springboot.core.entity.NewsFile;
+import com.site.springboot.core.entity.NewsVo;
 import com.site.springboot.core.service.CategoryService;
 import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.PageQueryUtil;
@@ -170,6 +171,16 @@ public class NewsController {
         } else {
             return ResultGenerator.genFailResult("删除失败");
         }
+    }
+    @GetMapping("/news/detail/{newsId}")
+    public String detailPage(HttpServletRequest request, @PathVariable("newsId") Long newsId) {
+        request.setAttribute("path", "detail");
+        NewsVo newsDetail=newsService.getNewsAndComments(newsId);
+        if(newsDetail!=null){
+            request.setAttribute("newsDetail", newsDetail);
+            return "index/detail";
+        }
+        return "error/error_400";
     }
 
 }

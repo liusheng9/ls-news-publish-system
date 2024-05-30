@@ -11,10 +11,12 @@ import com.site.springboot.core.util.ResultGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
+import org.springframework.web.servlet.ModelAndView;
 
 
 @Controller
@@ -40,6 +42,13 @@ public class IndexController {
             return "error/error_404";
         }
 
+    }
+    /**
+     * 展示前十个资讯和相应的评论
+     */
+    @GetMapping({"/", ""})
+    public String indexPage(Model model) {
+        return "admin/index";
     }
 
     /**

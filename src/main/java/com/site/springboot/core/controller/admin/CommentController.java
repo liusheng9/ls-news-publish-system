@@ -2,6 +2,7 @@ package com.site.springboot.core.controller.admin;
 
 import com.site.springboot.core.service.CommentService;
 import com.site.springboot.core.util.PageQueryUtil;
+import com.site.springboot.core.util.PageResult;
 import com.site.springboot.core.util.Result;
 import com.site.springboot.core.util.ResultGenerator;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,5 +63,14 @@ public class CommentController {
         } else {
             return ResultGenerator.genFailResult("刪除失败");
         }
+    }
+    @GetMapping("/comments/recent")
+    @ResponseBody
+    public Result listLastedComents(@RequestParam Map<String, Object> params) {
+        if (ObjectUtils.isEmpty(params.get("page")) || ObjectUtils.isEmpty(params.get("limit"))) {
+            return ResultGenerator.genFailResult("参数异常！");
+        }
+        PageResult pageResult=commentService.getCommentsPage( new PageQueryUtil(params));
+        return ResultGenerator.genSuccessResult(pageResult);
     }
 }

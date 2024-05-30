@@ -37,4 +37,6 @@ public class CommentServiceImpl implements CommentService {
     public Boolean deleteBatch(Integer[] ids) {
         return newsCommentMapper.deleteBatch(ids) > 0;
     }
+
+
 }

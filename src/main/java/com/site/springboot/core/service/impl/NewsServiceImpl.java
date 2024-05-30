@@ -1,10 +1,11 @@
 package com.site.springboot.core.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.site.springboot.core.dao.NewsCommentMapper;
 import com.site.springboot.core.dao.NewsMapper;
-import com.site.springboot.core.entity.News;
-import com.site.springboot.core.entity.NewsCategory;
-import com.site.springboot.core.entity.NewsFile;
+import com.site.springboot.core.entity.*;
 import com.site.springboot.core.service.CategoryService;
+import com.site.springboot.core.service.CommentService;
 import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.PageResult;
@@ -27,6 +28,9 @@ public class NewsServiceImpl implements NewsService {
     private NewsMapper newsMapper;
     @Resource
     private CategoryService categoryService;
+
+    @Autowired
+    private NewsCommentMapper commentMapper;
     private static final Logger logger = Logger.getLogger(NewsServiceImpl.class.getName());
 
     @CachePut(value = "news", key = "'news:' + #news.newsId")
@@ -104,5 +108,52 @@ public class NewsServiceImpl implements NewsService {
             res.add(file);
         }
         return res;
+    }
+    @Override
+    public List<News> getNewsRecent(){
+        return newsMapper.getNewsRecent();
+    }
+
+    @Override
+    public NewsVo getNewsAndComments(Long newsId) {
+        News news = newsMapper.selectByPrimaryKey(newsId);
+        List<NewsComment> newsComments = commentMapper.findNewsCommentListByNewsId(newsId);
+        NewsVo newsVo = new NewsVo();
+        newsVo.setNewsId(news.getNewsId());
+        newsVo.setNewsTitle(news.getNewsTitle());
+        newsVo.setNewsCoverImage(news.getNewsCoverImage());
+        newsVo.setNewsContent(news.getNewsContent());
+        newsVo.setNewsStatus(news.getNewsStatus());
+        newsVo.setNewsCategoryId(news.getNewsCategoryId());
+        newsVo.setNewsViews(news.getNewsViews());
+        newsVo.setCreateTime(news.getCreateTime());
+        newsVo.setComments(newsComments);
+        return newsVo;
+    }
+
+    @Override
+    public PageResult getLastedNews(PageQueryUtil pageUtil) {
+        List<NewsVo> newsList = this.findLastedNewsList();
+        int total = newsMapper.getTotalNews(pageUtil);
+        PageResult pageResult = new PageResult(newsList, total, pageUtil.getLimit(), pageUtil.getPage());
+        return pageResult;
+    }
+    @Override
+    public List<NewsVo> findLastedNewsList() {
+        List<NewsVo> newsVoList = new ArrayList<>();
+        List<News> news = newsMapper.getNewsRecent();
+        for (News news1 : news){
+            NewsVo newsVo = new NewsVo();
+            List<NewsComment> comments = commentMapper.findNewsCommentListByNewsId(news1.getNewsId());
+            newsVo.setNewsId(news1.getNewsId());
+            newsVo.setNewsTitle(news1.getNewsTitle());
+            newsVo.setNewsCoverImage(news1.getNewsCoverImage());
+            newsVo.setNewsStatus(news1.getNewsStatus());
+            newsVo.setNewsViews(news1.getNewsViews());
+            newsVo.setCreateTime(news1.getCreateTime());
+            newsVo.setComments(comments);
+            newsVoList.add(newsVo);
+        }
+        return newsVoList;
     }
 }
