@@ -5,6 +5,7 @@ import com.site.springboot.core.entity.NewsFile;
 import com.site.springboot.core.entity.NewsVo;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.PageResult;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -41,4 +42,12 @@ public interface NewsService {
 
     PageResult getLastedNews(PageQueryUtil pageUtil);
     List<NewsVo> findLastedNewsList();
+
+    Boolean isHasLiked(Long newsId, HttpServletRequest request) throws Exception;
+
+    Long getNewsLikes(Long newsId);
+
+    String likeNews(Long newsId, HttpServletRequest request);
+    String dislikeNews(Long newsId, HttpServletRequest request);
+
 }

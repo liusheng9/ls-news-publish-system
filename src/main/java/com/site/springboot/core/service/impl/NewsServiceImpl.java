@@ -10,10 +10,12 @@ import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.PageResult;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ public class NewsServiceImpl implements NewsService {
 
     @Autowired
     private NewsCommentMapper commentMapper;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
     private static final Logger logger = Logger.getLogger(NewsServiceImpl.class.getName());
 
     @CachePut(value = "news", key = "'news:' + #news.newsId")
@@ -155,5 +159,65 @@ public class NewsServiceImpl implements NewsService {
             newsVoList.add(newsVo);
         }
         return newsVoList;
+    }
+
+    @Override
+    public String likeNews(Long newsId, HttpServletRequest request) {
+        try {
+            Object loginUserIdObj = request.getAttribute("loginUserId");
+            Long userId;
+            if(loginUserIdObj != null) userId=Long.parseLong(loginUserIdObj.toString());
+            else throw new Exception("未登录");
+            String key="news:"+newsId+":likes";
+            Long addResult=stringRedisTemplate.opsForSet().add(key,userId.toString());
+            if (addResult!=null && addResult==1) {
+                stringRedisTemplate.opsForValue().increment(key,1);
+                return "success";
+            }else return "fail";
+        }catch (Exception e){
+            return "fail";
+        }
+    }
+    @Override
+    public String dislikeNews(Long newsId, HttpServletRequest request) {
+        try {
+            Object loginUserIdObj = request.getAttribute("loginUserId");
+            Long userId;
+            if(loginUserIdObj != null) userId=Long.parseLong(loginUserIdObj.toString());
+            else throw new Exception("未登录");
+            String key="news:"+newsId+":likes";
+
+            // 判断用户是否已经点赞
+            boolean isMember = stringRedisTemplate.opsForSet().isMember(key, userId.toString());
+            if (isMember) {
+                // 如果已点赞，则从点赞集合中移除用户
+                stringRedisTemplate.opsForSet().remove(key, userId.toString());
+                // 点赞数减一
+                stringRedisTemplate.opsForValue().decrement(key);
+                return "success";
+            } else {
+                return "already_liked";
+            }
+        } catch (Exception e) {
+            return "fail";
+        }
+    }
+
+
+    @Override
+    public Long getNewsLikes(Long newsId){
+        String count=stringRedisTemplate.opsForValue().get("news:"+newsId+":likes:count");
+        return count!=null?Long.parseLong(count):0L;
+    }
+
+    @Override
+    //获取用户点赞状态
+    public Boolean isHasLiked(Long newsId, HttpServletRequest request) throws Exception{
+        Object loginUserIdObj = request.getAttribute("loginUserId");
+        String userId;
+        if(loginUserIdObj!=null){
+            userId=loginUserIdObj.toString();
+        }else {throw new Exception("未登录");}
+        return stringRedisTemplate.opsForSet().isMember("news:"+newsId+":likes", userId);
     }
 }

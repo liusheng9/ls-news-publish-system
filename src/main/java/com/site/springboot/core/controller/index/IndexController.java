@@ -32,11 +32,13 @@ public class IndexController {
      * @return
      */
     @GetMapping({"/news/{newsId}"})
-    public String detail(HttpServletRequest request, @PathVariable("newsId") Long newsId) {
+    public String detail(HttpServletRequest request, @PathVariable("newsId") Long newsId) throws Exception {
         News newsDetail = newsService.queryNewsById(newsId);
         if (newsDetail != null) {
             request.setAttribute("newsDetail", newsDetail);
             request.setAttribute("pageName", "详情");
+            request.setAttribute("likesCount",newsService.getNewsLikes(newsId));
+            request.setAttribute("isHasLiked",newsService.isHasLiked(newsId,request));
             return "index/detail";
         } else {
             return "error/error_404";

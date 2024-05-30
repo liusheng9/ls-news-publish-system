@@ -183,4 +183,48 @@ public class NewsController {
         return "error/error_400";
     }
 
+    @PostMapping("/news/like")
+    @ResponseBody
+    public Result likeNews(HttpServletRequest request, @RequestParam("newsId") Long newsId) {
+
+        String res = newsService.likeNews(newsId,request);
+        if ("success".equals(res)) {
+            return ResultGenerator.genSuccessResult("成功");
+        }
+        return ResultGenerator.genFailResult(res);
+    }
+
+    @PostMapping("/news/unlike")
+    @ResponseBody
+    public Result unlikeNews(HttpServletRequest request, @RequestParam("newsId")  Long newsId) {
+
+        String res = newsService.dislikeNews(newsId,request);
+        if ("success".equals(res)) {
+            return ResultGenerator.genSuccessResult("成功");
+        }
+        return ResultGenerator.genFailResult(res);
+    }
+
+    @GetMapping("/news/like")
+    @ResponseBody
+    public Result getlikeNews(@RequestParam("newsId")  Long newsId) {
+        try {
+            return ResultGenerator.genSuccessResult(newsService.getNewsLikes(newsId));
+        }catch (Exception e){
+            return ResultGenerator.genFailResult("获取失败");
+        }
+    }
+
+    @GetMapping("/news/isHasLiked")
+    @ResponseBody
+    public Result likeNews(@RequestParam("newsId") Long newsId,
+                           HttpServletRequest request) {
+        try {
+            return ResultGenerator.genSuccessResult(newsService.isHasLiked(newsId,request));
+        }catch (Exception e){
+            return ResultGenerator.genFailResult("获取失败");
+        }
+    }
+
+
 }
