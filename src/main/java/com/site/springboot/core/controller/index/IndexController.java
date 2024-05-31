@@ -3,6 +3,8 @@ package com.site.springboot.core.controller.index;
 import cn.hutool.captcha.ShearCaptcha;
 import com.site.springboot.core.entity.News;
 import com.site.springboot.core.entity.NewsComment;
+import com.site.springboot.core.entity.NewsIndex;
+import com.site.springboot.core.repository.NewsEsRepository;
 import com.site.springboot.core.service.CommentService;
 import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.AntiXssUtils;
@@ -16,7 +18,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
-import org.springframework.web.servlet.ModelAndView;
+
+import java.util.List;
 
 
 @Controller
@@ -25,6 +28,8 @@ public class IndexController {
     private CommentService commentService;
     @Resource
     private NewsService newsService;
+
+    private NewsEsRepository elasticRepository;
 
     /**
      * 详情页
@@ -91,5 +96,11 @@ public class IndexController {
         comment.setCommentBody(AntiXssUtils.cleanString(commentBody));
         session.removeAttribute("verifyCode");//留言成功后删除session中的验证码信息
         return ResultGenerator.genSuccessResult(commentService.addComment(comment));
+    }
+
+    @GetMapping("/search-es")
+    public List<NewsIndex> searchByEs(@RequestParam("keyword") String keyword){
+        List<NewsIndex> byNewsConntentLike = elasticRepository.findByNewsContentLike(keyword);
+        return byNewsConntentLike;
     }
 }

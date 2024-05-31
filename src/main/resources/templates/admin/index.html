@@ -27,13 +27,16 @@
                     <div class="card-header">
                         <h3 class="card-title">最近新闻</h3>
                     </div> <!-- /.card-body -->
+<!--                    <form action="#" th:action="@{/admin/news/search}" method="get">-->
+<!--                        <input type="text" name="keyword" placeholder="请输入关键词" required>-->
+<!--                        <button type="submit">搜索</button>-->
+<!--                    </form>-->
                     <div class="card-body">
                         <div class="grid-btn">
                             <input type="text" id="searchInput" placeholder="输入关键词">
                             <button class="btn btn-info" onclick="findNews(document.getElementById('searchInput').value)">
                                 <i class="fa fa-search"></i>&nbsp;搜索
                             </button>
-
                             <div id="resultContainer" class="result-container"></div>
                         </div>
 

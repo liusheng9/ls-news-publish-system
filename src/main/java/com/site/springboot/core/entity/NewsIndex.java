@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -27,13 +28,13 @@ public class NewsIndex {
     @Field(type= FieldType.Long)
     @Id
     private Long newsId;
-    @Field(type= FieldType.Text,analyzer = "ik_smart")
+    @Field(type= FieldType.Text)
     private String newsTitle;
     @Field(type= FieldType.Long)
     private Long newsCategoryId;
     @Field(type= FieldType.Text)
     private String newsCoverImage;
-    @Field(type= FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
     private String newsContent;
     @Field(type =FieldType.Byte)
     private Byte newsStatus;
@@ -43,10 +44,10 @@ public class NewsIndex {
     private Byte isDeleted;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @Field(type =FieldType.Date)
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private Date createTime;
 
-    @Field(type =FieldType.Date)
+    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private Date updateTime;
 
 

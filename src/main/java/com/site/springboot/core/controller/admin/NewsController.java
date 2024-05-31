@@ -7,13 +7,17 @@ import com.site.springboot.core.entity.NewsCategory;
 import com.site.springboot.core.entity.NewsFile;
 import com.site.springboot.core.entity.NewsVo;
 import com.site.springboot.core.service.CategoryService;
+import com.site.springboot.core.service.NewsEsService;
 import com.site.springboot.core.service.NewsService;
 import com.site.springboot.core.util.PageQueryUtil;
 import com.site.springboot.core.util.Result;
 import com.site.springboot.core.util.ResultGenerator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.ibatis.javassist.NotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +26,7 @@ import jakarta.annotation.Resource;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +39,9 @@ public class NewsController {
     private NewsService newsService;
     @Resource
     private CategoryService categoryService;
+
+    @Autowired
+    private NewsEsService newsEsService;
 
     @GetMapping("/news")
     public String list(HttpServletRequest request) {
@@ -100,6 +108,7 @@ public class NewsController {
         news.setNewsStatus(newsStatus);
         news.setNewsTitle(newsTitle);
         News saveBlogResult = newsService.saveNews(news);
+        newsEsService.saveNewsToEs(saveBlogResult);
         if (saveBlogResult!=null) {
             return ResultGenerator.genSuccessResult("添加成功");
         } else {
@@ -153,6 +162,11 @@ public class NewsController {
         news.setNewsStatus(newsStatus);
         news.setNewsTitle(newsTitle);
         String updateResult = newsService.updateNews(news);
+        try {
+            newsEsService.updateNewsToEs(news);
+        } catch (NotFoundException e) {
+            System.out.println(e.getMessage());
+        }
         if ("success".equals(updateResult)) {
             return ResultGenerator.genSuccessResult("修改成功");
         } else {
@@ -166,7 +180,12 @@ public class NewsController {
         if (ids.length < 1) {
             return ResultGenerator.genFailResult("参数异常！");
         }
+        List<Long> longs = new ArrayList<>();
+        for (int i = 0; i < ids.length; i++) {
+            longs.add(Long.valueOf(ids[i]));
+        }
         if (newsService.deleteBatch(ids)) {
+            newsEsService.deleteNewsByIdToEs(longs);
             return ResultGenerator.genSuccessResult();
         } else {
             return ResultGenerator.genFailResult("删除失败");
@@ -226,5 +245,13 @@ public class NewsController {
         }
     }
 
+    @GetMapping("/news/search")
+    @ResponseBody
+    public List<News> search(HttpServletRequest request, @RequestParam("keyword") String keyword) {
+        request.setAttribute("path", "search");
+        request.setAttribute("keyword", keyword);
+        List<News> newsList = newsEsService.searchNews(keyword);
+        return newsList;
+    }
 
 }
